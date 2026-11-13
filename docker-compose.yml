@@ -1,0 +1,44 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: workhive_app
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://${MONGO_ROOT_USER:-workhive}:${MONGO_ROOT_PASSWORD:?Please set MONGO_ROOT_PASSWORD before running docker compose}@mongodb:27017/workhive?authSource=admin
+      - JWT_SECRET=${JWT_SECRET:?Please set JWT_SECRET before running docker compose}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@workhive.coop}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-AdminPass2026!}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME:-}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY:-}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET:-}
+      - CORS_ORIGIN=http://localhost:5000,http://localhost:5173
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:7-jammy
+    container_name: workhive_mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER:-workhive}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:?Please set MONGO_ROOT_PASSWORD before running docker compose}
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  mongo-data:

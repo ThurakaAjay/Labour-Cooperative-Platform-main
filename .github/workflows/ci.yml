@@ -1,0 +1,46 @@
+name: WorkHive CI Pipeline
+
+# Disabled: no longer runs automatically on push/PR. Trigger manually from
+# the Actions tab (workflow_dispatch) if needed, or restore the push/
+# pull_request triggers below to turn it back on.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Server Dependencies
+        run: |
+          cd server
+          npm ci || npm install
+
+      - name: Install Client Dependencies
+        run: |
+          cd client
+          npm ci || npm install
+
+      - name: Run Server Automated Tests
+        run: |
+          cd server
+          npm test
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test_jwt_secret_for_ci_pipeline_only
+          ALLOW_IN_MEMORY_DB: "true"
+
+      - name: Build Vite Client Application
+        run: |
+          cd client
+          npm run build

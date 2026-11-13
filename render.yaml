@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: workhive
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false  # Paste your MongoDB Atlas URI in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true  # Render will automatically generate a secure random secret
+      - key: ADMIN_EMAIL
+        sync: false  # Cooperative administrator email (auto-seeds admin account)
+      - key: ADMIN_PASSWORD
+        sync: false  # Cooperative administrator password
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false  # Cloudinary cloud name for photo storage
+      - key: CLOUDINARY_API_KEY
+        sync: false  # Cloudinary API key
+      - key: CLOUDINARY_API_SECRET
+        sync: false  # Cloudinary API secret
+      - key: CORS_ORIGIN
+        sync: false  # Optional: Comma-separated list of allowed origins (e.g. your custom domain)
